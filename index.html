@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titanium BaseWars - Connexion...</title>
+    <!-- Google Fonts: Montserrat & Kode Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;600&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #0b0d19;
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Ambient animated background particles */
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.45;
+        }
+
+        .bg-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(150px);
+            z-index: 1;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .glow-cyan {
+            background: #00bfff;
+            top: -10%;
+            left: -10%;
+            animation: floatGlow 18s ease-in-out infinite alternate;
+        }
+
+        .glow-purple {
+            background: #9b59b6;
+            bottom: -10%;
+            right: -10%;
+            animation: floatGlow 22s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(80px, 50px) scale(1.15); }
+        }
+
+        /* Container Main */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 1200px;
+            height: 85vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            padding: 30px;
+            background: rgba(15, 18, 28, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px rgba(255, 255, 255, 0.08) solid;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px rgba(255, 255, 255, 0.06) solid;
+            padding-bottom: 15px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-shield {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #00bfff, #9b59b6);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 191, 255, 0.3); }
+            100% { transform: scale(1.05); box-shadow: 0 0 25px rgba(155, 89, 182, 0.6); }
+        }
+
+        .logo-title h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #ffffff, #a0afc3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-title span {
+            font-size: 11px;
+            color: #00bfff;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Server Stats Badge */
+        .server-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-badge {
+            background: rgba(22, 26, 40, 0.6);
+            border: 1px rgba(255, 255, 255, 0.04) solid;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-badge span.value {
+            color: #00bfff;
+        }
+
+        /* Content Area */
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 30px;
+            overflow: hidden;
+        }
+
+        .left-col {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        /* Banner & Presentation */
+        .presentation-card {
+            background: linear-gradient(135deg, rgba(22, 26, 40, 0.9), rgba(16, 20, 32, 0.9));
+            border-radius: 12px;
+            border: 1px rgba(255, 255, 255, 0.05) solid;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-text h2 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .welcome-text p {
+            font-size: 13px;
+            color: #a0afc3;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        /* Music Card inside Welcome Card */
+        .music-player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 10px 18px;
+            border-radius: 30px;
+            border: 1px rgba(255, 255, 255, 0.05) solid;
+        }
+
+        .music-info {
+            font-size: 11px;
+            text-align: right;
+        }
+
+        .music-info .track {
+            font-weight: 600;
+            color: #00bfff;
+        }
+
+        .music-info .artist {
+            color: #a0afc3;
+        }
+
+        .music-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 191, 255, 0.2);
+            border: 1px #00bfff solid;
+            color: #00bfff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .music-btn:hover {
+            background: #00bfff;
+            color: #0b0d19;
+            transform: scale(1.08);
+        }
+
+        /* Map Card & Server Info Section */
+        .map-section {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .map-preview {
+            position: relative;
+            border-radius: 12px;
+            border: 1px rgba(255, 255, 255, 0.06) solid;
+            overflow: hidden;
+            background: #101420;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+        }
+
+        .map-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.65;
+            transition: all 1s ease;
+        }
+
+        .map-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to top, rgba(11, 13, 25, 0.95), rgba(11, 13, 25, 0));
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .map-overlay .label {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #00bfff;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .map-overlay .name {
+            font-size: 18px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        }
+
+        /* Rules Cards and Panels */
+        .info-panels {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .info-panels::-webkit-scrollbar {
+            width: 4px;
+        }
+        .info-panels::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+        }
+
+        .panel-card {
+            background: rgba(22, 26, 40, 0.4);
+            border: 1px rgba(255, 255, 255, 0.04) solid;
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .panel-card h3 {
+            font-size: 14px;
+            font-weight: 800;
+            color: #00bfff;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px rgba(0, 191, 255, 0.15) solid;
+            padding-bottom: 6px;
+        }
+
+        .rules-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .rule-item {
+            font-size: 12px;
+            line-height: 1.4;
+            color: #a0afc3;
+            display: flex;
+            gap: 8px;
+        }
+
+        .rule-num {
+            color: #9b59b6;
+            font-weight: 600;
+        }
+
+        /* Right column: Staff & VIP benefits */
+        .right-col {
+            background: rgba(22, 26, 40, 0.4);
+            border: 1px rgba(255, 255, 255, 0.04) solid;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #9b59b6;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px rgba(155, 89, 182, 0.15) solid;
+            padding-bottom: 6px;
+        }
+
+        .staff-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .staff-member {
+            background: rgba(15, 18, 28, 0.5);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px rgba(255, 255, 255, 0.02) solid;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .staff-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .staff-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .staff-role {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .role-founder { color: #e74c3c; }
+        .role-admin { color: #f1c40f; }
+        .role-moderator { color: #2ecc71; }
+
+        .vip-banner {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.15), rgba(0, 191, 255, 0.1));
+            border: 1px rgba(155, 89, 182, 0.3) solid;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #e0d0f5;
+        }
+
+        .vip-banner strong {
+            color: #f1c40f;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
+        }
+
+        /* Footer & Progress Bar */
+        footer {
+            border-top: 1px rgba(255, 255, 255, 0.06) solid;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .loading-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #a0afc3;
+        }
+
+        .current-action {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .file-count {
+            font-family: 'Kode Mono', monospace;
+            font-size: 11px;
+        }
+
+        /* Progress Bar wrapper */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(22, 26, 40, 0.7);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px rgba(255, 255, 255, 0.04) solid;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(to right, #00bfff, #2ecc71);
+            box-shadow: 0 0 12px rgba(46, 204, 113, 0.5);
+            border-radius: 5px;
+            transition: width 0.3s ease-out;
+        }
+
+        /* Hide audio element */
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient animated particle glows -->
+    <div class="bg-glow glow-cyan"></div>
+    <div class="bg-glow glow-purple"></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo-area">
+                <div class="logo-shield">Ti</div>
+                <div class="logo-title">
+                    <h1 id="servername">TITANIUM BASEWARS</h1>
+                    <span>EXPÉRIENCE DÉDIÉE PREMIUM</span>
+                </div>
+            </div>
+            <div class="server-stats">
+                <div class="stat-badge">
+                    <span>Slots :</span>
+                    <span class="value" id="maxplayers">-- / --</span>
+                </div>
+                <div class="stat-badge">
+                    <span>Mode :</span>
+                    <span class="value" id="gamemode">BaseWars</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENT -->
+        <div class="content">
+            <!-- Left Column -->
+            <div class="left-col">
+                <!-- Welcome Card -->
+                <div class="presentation-card">
+                    <div class="welcome-text">
+                        <h2>Bienvenue sur Titanium BaseWars !</h2>
+                        <p>Plongez dans notre serveur local avec un branding entièrement renouvelé et des mécaniques optimisées. Imprimez des crédits, gérez votre banque en toute autonomie et devenez le joueur le plus fort de la ville.</p>
+                    </div>
+                    <!-- Ambient Music Player -->
+                    <div class="music-player">
+                        <div class="music-info">
+                            <div class="track" id="track-name">Ambient Synth</div>
+                            <div class="artist" id="artist-name">Titanium Sound</div>
+                        </div>
+                        <div class="music-btn" id="play-btn">▶</div>
+                    </div>
+                </div>
+
+                <!-- Map and Info Section -->
+                <div class="map-section">
+                    <!-- Map Preview Card -->
+                    <div class="map-preview">
+                        <img class="map-image" id="mapimg" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=320&auto=format&fit=crop" alt="Map">
+                        <div class="map-overlay">
+                            <span class="label">Carte Actuelle</span>
+                            <span class="name" id="mapname">Chargement...</span>
+                        </div>
+                    </div>
+
+                    <!-- Info Panels (Rules) -->
+                    <div class="info-panels">
+                        <div class="panel-card">
+                            <h3>Règlement Général</h3>
+                            <div class="rules-list">
+                                <div class="rule-item"><span class="rule-num">1.</span> Pas de PropKill, PropPush ou PropBlock abusif.</div>
+                                <div class="rule-item"><span class="rule-num">2.</span> Raids limités et cadrés par les règles d'autonomie.</div>
+                                <div class="rule-item"><span class="rule-num">3.</span> Restez courtois et respectueux dans le chat global.</div>
+                                <div class="rule-item"><span class="rule-num">4.</span> Ne pas exploiter de bugs ou failles de duplication.</div>
+                            </div>
+                        </div>
+                        <div class="panel-card">
+                            <h3>Autonomie de la Banque</h3>
+                            <p style="font-size: 12px; color: #a0afc3; line-height: 1.5;">Notre banque automatique Titanium vous permet désormais d'aspirer vos printers normaux et de collecter des crédits avec nos tout nouveaux <strong>VIP & Premium Credit Printers</strong>. Plus aucun printer n'est sujet à amélioration via la banque, garantissant une économie 100% équilibrée.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column (Staff) -->
+            <div class="right-col">
+                <h3 class="section-title">L'Équipe du Staff</h3>
+                <div class="staff-list">
+                    <div class="staff-member">
+                        <div class="staff-info">
+                            <span class="staff-name">Theo</span>
+                            <span class="staff-role role-founder">Fondateur</span>
+                        </div>
+                    </div>
+                    <div class="staff-member">
+                        <div class="staff-info">
+                            <span class="staff-name">Antigravity AI</span>
+                            <span class="staff-role role-admin">Administrateur Technique</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="vip-banner">
+                    Devenez membre <strong>PREMIUM</strong> grâce à vos crédits accumulés dans la boutique en jeu (<strong>F3</strong>) !
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER & PROGRESS -->
+        <footer>
+            <div class="loading-details">
+                <span class="current-action" id="status">Veuillez patienter pendant le chargement des scripts...</span>
+                <span class="file-count" id="filecount">Fichiers restants : 0 / 0</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressbar"></div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Background Music Audio Tag (Creative Commons / Safe Track) -->
+    <audio id="loading-audio" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-retro-futurism-150.mp3" type="audio/mp3">
+    </audio>
+
+    <!-- Canvas Particles & GMod API Hooks Script -->
+    <script>
+        // Canvas particle background logic
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.3 - 0.15;
+                this.speedY = Math.random() * 0.3 - 0.15;
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(0, 191, 255, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 80; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Audio controls
+        const audio = document.getElementById('loading-audio');
+        const playBtn = document.getElementById('play-btn');
+        audio.volume = 0.25;
+
+        // Auto-play attempt (muted or unmuted depending on browser permissions)
+        window.addEventListener('DOMContentLoaded', () => {
+            const startPlay = audio.play();
+            if (startPlay !== undefined) {
+                startPlay.then(() => {
+                    playBtn.innerHTML = "⏸";
+                }).catch(error => {
+                    // Autoplay prevented by browser
+                    playBtn.innerHTML = "▶";
+                });
+            }
+        });
+
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.innerHTML = "⏸";
+            } else {
+                audio.pause();
+                playBtn.innerHTML = "▶";
+            }
+        });
+
+        // ════════════════════════════════════════════════
+        //  GARRY'S MOD LOADING SCREEN API CALLBACKS
+        // ════════════════════════════════════════════════
+        let totalFilesNeeded = 0;
+        let filesRemaining = 0;
+
+        // 1. Initial details provided by Garry's Mod
+        function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
+            if (servername) document.getElementById('servername').innerText = servername.toUpperCase();
+            if (mapname) {
+                document.getElementById('mapname').innerText = mapname;
+                
+                // Adaptive map preview image depending on map
+                const mapimg = document.getElementById('mapimg');
+                if (mapname.toLowerCase().includes('bangclaw')) {
+                    mapimg.src = "https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=320&auto=format&fit=crop";
+                } else if (mapname.toLowerCase().includes('construct')) {
+                    mapimg.src = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=320&auto=format&fit=crop";
+                } else if (mapname.toLowerCase().includes('flatgrass')) {
+                    mapimg.src = "https://images.unsplash.com/photo-1500627869374-13cd993b1115?q=80&w=320&auto=format&fit=crop";
+                }
+            }
+            if (maxplayers) document.getElementById('maxplayers').innerText = `Slots : ${maxplayers}`;
+            if (gamemode) document.getElementById('gamemode').innerText = gamemode.toUpperCase();
+            if (volume) audio.volume = Math.max(0.01, volume / 100);
+        }
+
+        // 2. Set total files count needed to download
+        function SetFilesNeeded(needed) {
+            totalFilesNeeded = needed;
+            updateProgress();
+        }
+
+        // 3. Set files count remaining to download
+        function SetFilesRemaining(remaining) {
+            filesRemaining = remaining;
+            updateProgress();
+        }
+
+        // 4. Set loading status text
+        function SetStatusChanged(status) {
+            if (status) {
+                document.getElementById('status').innerText = status;
+                
+                // Auto transition status text to readable French translations
+                if (status.includes("Sending client info")) {
+                    document.getElementById('status').innerText = "Envoi des informations du client au serveur...";
+                } else if (status.includes("Workshop")) {
+                    document.getElementById('status').innerText = "Vérification des addons du Workshop Steam...";
+                } else if (status.includes("Mounting")) {
+                    document.getElementById('status').innerText = "Montage du contenu de jeu...";
+                }
+            }
+        }
+
+        // 5. Update during specific file downloading
+        function DownloadingFile(filename) {
+            if (filename) {
+                let display = filename;
+                if (filename.length > 55) {
+                    display = "..." + filename.substring(filename.length - 50);
+                }
+                document.getElementById('status').innerText = "Téléchargement de : " + display;
+            }
+        }
+
+        // Progress bar logic
+        function updateProgress() {
+            let needed = totalFilesNeeded || 100;
+            let remaining = filesRemaining || 0;
+            let downloaded = Math.max(0, needed - remaining);
+            let pct = (downloaded / needed) * 100;
+
+            document.getElementById('progressbar').style.width = pct + "%";
+            document.getElementById('filecount').innerText = `Fichiers : ${downloaded} / ${needed}`;
+        }
+    </script>
+</body>
+</html>
