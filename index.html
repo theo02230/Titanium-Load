@@ -505,7 +505,7 @@
             </div>
             <div class="server-stats">
                 <div class="stat-badge">
-                    <span>Slots :</span>
+                    <span>Joueurs :</span>
                     <span class="value" id="maxplayers">-- / --</span>
                 </div>
                 <div class="stat-badge">
@@ -703,10 +703,41 @@
                     mapimg.src = "https://images.unsplash.com/photo-1500627869374-13cd993b1115?q=80&w=320&auto=format&fit=crop";
                 }
             }
-            if (maxplayers) document.getElementById('maxplayers').innerText = `Slots : ${maxplayers}`;
+            if (maxplayers) {
+                window.__maxplayers = maxplayers;
+                document.getElementById('maxplayers').innerText = `0 / ${maxplayers}`;
+            }
             if (gamemode) document.getElementById('gamemode').innerText = gamemode.toUpperCase();
             if (volume) audio.volume = Math.max(0.01, volume / 100);
         }
+
+        // ── Compteur de joueurs live ──────────────────────
+        // GMod ne transmet PAS le nombre de joueurs connectes au loading screen
+        // (GameDetails ne donne que maxplayers). On le lit via l'API BattleMetrics
+        // (CORS *) du serveur public : ID 39131405 = 149.202.215.86:27015.
+        (function(){
+            var BM_ID = '39131405';
+            function poll(){
+                try{
+                    var x = new XMLHttpRequest();
+                    x.open('GET','https://api.battlemetrics.com/servers/'+BM_ID,true);
+                    x.onreadystatechange = function(){
+                        if(x.readyState === 4 && x.status === 200){
+                            try{
+                                var a = JSON.parse(x.responseText).data.attributes;
+                                if(a.status === 'online'){
+                                    var el = document.getElementById('maxplayers');
+                                    if(el) el.innerText = a.players + ' / ' + (window.__maxplayers || a.maxPlayers);
+                                }
+                            }catch(e){}
+                        }
+                    };
+                    x.send();
+                }catch(e){}
+            }
+            poll();
+            setInterval(poll, 10000);
+        })();
 
         // 2. Set total files count needed to download
         function SetFilesNeeded(needed) {
